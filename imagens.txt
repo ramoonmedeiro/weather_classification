@@ -343,7 +343,6 @@ rain138.jpg
 rain139.jpg
 rain13.jpg
 rain140.jpg
-rain141.jpg
 rain142.jpg
 rain143.jpg
 rain144.jpg
@@ -547,7 +546,6 @@ shine128.jpg
 shine129.jpg
 shine12.jpg
 shine130.jpg
-shine131.jpg
 shine132.jpg
 shine133.jpg
 shine134.jpg
