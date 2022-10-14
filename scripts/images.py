@@ -40,6 +40,10 @@ def save_array():
 		for linha in conteudo:
 			linha = linha.strip()
 			imagem = cv2.imread(f'../{linha}')
-			imagens.append(imagem)
+			# transformando BGR para RGB
+			im_rgb = cv2.cvtColor(imagem, cv2.COLOR_BGR2RGB)
+			imagens.append(im_rgb)
 
 	np.save('../datasets/pixels.npy', np.array(imagens))
+
+	return
