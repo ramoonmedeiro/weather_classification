@@ -19,17 +19,18 @@ def resize_fig(shape):
 	return
 
 def create_labels():
-	cloudy = ['cloudy' for i in range(300)]
-	rain = ['rain' for i in range(214)]
-	shine = ['shine' for i in range(252)]
-	sunrise = ['sunrise' for i in range(357)]
+	cloudy = {i: 'cloudy' for i in range(1, 301, 1)}
+	rain = {i: 'rain' for i in range(301, 515, 1)}
+	shine = {i: 'shine' for i in range(515, 767, 1)}
+	sunrise = {i: 'sunrise' for i in range(767, 1124, 1)}
 
-	labels = cloudy+rain+shine+sunrise
+	labels = {**cloudy,**rain, **shine, **sunrise}
 
-	with open('../datasets/labels.csv', 'w', newline='') as arquivo:
-   		writer = csv.writer(arquivo)
-   		writer.writerow(labels)
-
+	with open('../datasets/labels.txt', 'w') as arquivo:
+		for k,v in labels.items():
+			arquivo.write(f'{k}, {v}\n')
+		
+   		
 	return
 
 def save_array():
