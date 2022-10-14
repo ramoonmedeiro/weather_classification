@@ -1,15 +1,16 @@
-import pandas as pd
+import cv2
 import numpy as np
-import csv
 
+path = '/home/ramon/dataset2/datasets/imagens.txt'
 
-cloudy = ['cloudy' for i in range(300)]
-rain = ['rain' for i in range(214)]
-shine = ['shine' for i in range(252)]
-sunrise = ['sunrise' for i in range(357)]
+imagens = []
 
-labels = cloudy+rain+shine+sunrise
+with open(path, 'r') as arquivo:
+    conteudo = arquivo.readlines()
+    for linha in conteudo:
+        linha = linha.strip()
+        imagem = cv2.imread(f'../{linha}')
+        imagens.append(imagem)
 
-with open('labels.csv', 'w', newline='') as arquivo:
-    writer = csv.writer(arquivo)
-    writer.writerow(labels)
+a = np.array(imagens)
+print(a.shape)   

@@ -5,11 +5,11 @@ import numpy as np
 import csv
 
 def join():
-	os.system('ls *.jpg *jpeg >> imagens.txt')
+	os.system('ls *.jpg *jpeg >> datasets/imagens.txt')
 	return
 
 def resize_fig(shape):
-	with open('imagens.txt', 'r') as arquivo:
+	with open('../datasets/imagens.txt', 'r') as arquivo:
 		conteudo = arquivo.readlines()
 		for linha in conteudo:
 			linha = linha.replace('\n', '')
@@ -26,8 +26,20 @@ def create_labels():
 
 	labels = cloudy+rain+shine+sunrise
 
-	with open('labels.csv', 'w', newline='') as arquivo:
-    	writer = csv.writer(arquivo)
-    	writer.writerow(labels)
+	with open('../datasets/labels.csv', 'w', newline='') as arquivo:
+   		writer = csv.writer(arquivo)
+   		writer.writerow(labels)
 
-    return
+	return
+
+def save_array():
+	imagens = []
+
+	with open('../datasets/imagens.txt', 'r') as arquivo:
+		conteudo = arquivo.readlines()
+		for linha in conteudo:
+			linha = linha.strip()
+			imagem = cv2.imread(f'../{linha}')
+			imagens.append(imagem)
+
+	np.save('../datasets/pixels.npy', np.array(imagens))
