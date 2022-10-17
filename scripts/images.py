@@ -27,8 +27,9 @@ def create_labels():
 	labels = {**cloudy,**rain, **shine, **sunrise}
 
 	with open('../datasets/labels.txt', 'w') as arquivo:
-		for k,v in labels.items():
-			arquivo.write(f'{k}, {v}\n')
+		arquivo.write('labels\n')
+		for v in labels.values():
+			arquivo.write(f'{v}\n')
 		
    		
 	return
