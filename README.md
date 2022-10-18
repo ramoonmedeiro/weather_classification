@@ -64,5 +64,21 @@ X_treino /= 255.0
 X_teste /= 255.0
 ```
 
+Abaixo é apresentado os resultados das acurácias que as CNNs obtiveram sem o método de data augmentation. Inicia-se a criação da CNN para a validação cruzada:
+
+```
+def cnn_create():
+  model = Sequential()
+  model.add(Conv2D(32, (3,3), input_shape = (150, 150, 3), activation = 'relu'))
+  model.add(MaxPooling2D(pool_size=(2,2)))
+  model.add(Flatten())
+  model.add(Dense(units = 128, activation = 'relu'))
+  model.add(Dropout(0.2))
+  model.add(Dense(units = 4, activation = 'softmax'))
+  model.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+  return model
+```
+A rede neural é composta por uma camada de convolução, onde 32 kernels (matrizes 3x3 para esse caso) serão aplicados para gerar 32 mapas de características e posterior aplicação da função de ativação reLU para retirar números negativos na matriz resultante. Aplicou-se o Max Pooling nos mapas de características, tal aplicação é importante já que nesta etapa mais características relevantes podem ser extraídas e também pode-se evitar o overfitting ou ruídos. Posteriormente aplica-se o Flatten, para reordenar os dados para a camada de entrada da rede neur
+
 
 
