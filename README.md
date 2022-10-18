@@ -132,3 +132,5 @@ print(f'{round(acc_teste*100, 2)} %')
 
 88.53 %
 ```
+
+# Deploy
