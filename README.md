@@ -29,13 +29,10 @@ from keras.utils import to_categorical
 from keras.preprocessing.image import ImageDataGenerator
 
 # Libs do sklearn
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
-# Lib do scikeras
-from scikeras.wrappers import KerasClassifier
 ```
-
 Carregando o dataset:
 
 ```
@@ -50,57 +47,26 @@ labels = labels['labels']
 labels = to_categorical(labels, 4)
 ```
 
-Separação entre treino e teste. Além da normalização dos pixels:
+Separação entre treino, teste e validação. Além da normalização dos pixels:
 
 ```
-X_treino, X_teste, y_treino, y_teste = train_test_split(data, labels, test_size=0.25, random_state=99)
+X_t, X_teste, y_t, y_teste = train_test_split(data, labels, test_size=0.20, random_state=99)
+X_treino, X_valid, y_treino, y_valid = train_test_split(X_t, y_t, test_size=0.2, random_state=99)
+
 
 # Tranformando valores para float32
 X_treino = X_treino.astype('float32')
+X_valid = X_valid.astype('float32')
 X_teste = X_teste.astype('float32')
 
 # Normalizando os valores dos pixels
 X_treino /= 255.0
+X_valid /= 255.0
 X_teste /= 255.0
 ```
 ** Método sem augmentation **
 
 Abaixo é apresentado os resultados das acurácias que as CNNs obtiveram sem o método de data augmentation. Inicia-se a criação da CNN para a validação cruzada:
-
-```
-def cnn_create():
-  model = Sequential()
-  model.add(Conv2D(32, (3,3), input_shape = (150, 150, 3), activation = 'relu'))
-  model.add(MaxPooling2D(pool_size=(2,2)))
-  model.add(Flatten())
-  model.add(Dense(units = 128, activation = 'relu'))
-  model.add(Dropout(0.2))
-  model.add(Dense(units = 4, activation = 'softmax'))
-  model.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-  return model
-```
-A rede neural é composta por uma camada de convolução, onde 32 kernels (matrizes 3x3 para esse caso) serão aplicados para gerar 32 mapas de características e posterior aplicação da função de ativação reLU para retirar números negativos na matriz resultante. Aplicou-se o Max Pooling nos mapas de características, tal aplicação é importante já que nesta etapa mais características relevantes podem ser extraídas e também pode-se evitar o overfitting ou ruídos. Posteriormente aplica-se o Flatten, para reordenar os dados para a camada de entrada para a camada densa. Apenas uma camda oculta foi adicionada à rede neural, com 128 neurônios e função de ativação reLU. Utilizou uma camda de Dropout para reiniciar os pesos de 20% dos neurônios. A camada de saída possui 4 neurônios, já que o problema apresenta 4 classes. Abaixo cria-se um classificador com o scikeras:
-
-```
-# Classificador
-clf = KerasClassifier(build_fn = cnn_create, epochs = 5, batch_size = 100)
-# Validação Cruzada
-results = cross_val_score(clf, X_treino, y_treino, cv = 10)
-
-# Acurácia e desvio padrão
-acc = results.mean()
-std = results.std()
-
-print(f'acc: {acc:.2f} +- {std:.2f}')
-
-acc: 0.86 +- 0.04
-```
-
-A validação cruzada forneceu 86 % de acurácia para o conjunto de treinamento sem data augmentation.
-
-** Com data augmentation **
-
-Novamente cria-se a rede neural, da mesma forma que a anterior, porém, agora iremos utilizar o data augmentation:
 
 ```
 model = Sequential()
@@ -111,28 +77,58 @@ model.add(Dense(units = 128, activation = 'relu'))
 model.add(Dropout(0.2))
 model.add(Dense(units = 4, activation = 'softmax'))
 model.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+```
+
+A rede neural é composta por uma camada de convolução, onde 32 kernels (matrizes 3x3 para esse caso) serão aplicados para gerar 32 mapas de características e posterior aplicação da função de ativação reLU para retirar números negativos na matriz resultante. Aplicou-se o Max Pooling nos mapas de características, tal aplicação é importante já que nesta etapa mais características relevantes podem ser extraídas e também pode-se evitar o overfitting ou ruídos. Posteriormente aplica-se o Flatten, para reordenar os dados para a camada de entrada para a camada densa. Apenas uma camda oculta foi adicionada à rede neural, com 128 neurônios e função de ativação reLU. Utilizou uma camda de Dropout para reiniciar os pesos de 20% dos neurônios. A camada de saída possui 4 neurônios, já que o problema apresenta 4 classes. Abaixo é realizado o treinamento da rede neural já utilizando a validação:
+
+
+```
+model.fit(X_treino, y_treino, validation_data=(X_valid, y_valid), epochs = 10)
+loss, acc = model.evaluate(X_valid, y_valid)
+print(f'{round(acc*100, 2)} %')
+
+87.78 %
+```
+
+Tal rede neural forneceu 87.78 % de acurácia para o conjunto de treinamento sem data augmentation.
+
+** Com data augmentation **
+
+Novamente cria-se a rede neural, da mesma forma que a anterior, porém, agora iremos utilizar o data augmentation:
+
+```
+model2 = Sequential()
+model2.add(Conv2D(32, (3,3), input_shape = (150, 150, 3), activation = 'relu'))
+model2.add(MaxPooling2D(pool_size=(2,2)))
+model2.add(Flatten())
+model2.add(Dense(units = 128, activation = 'relu'))
+model2.add(Dropout(0.2))
+model2.add(Dense(units = 4, activation = 'softmax'))
+model2.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
 # Criando mais imagens no conjunto de treino
 gtreino = ImageDataGenerator(rotation_range=7, horizontal_flip = True, shear_range = 0.3, height_shift_range=0.07, zoom_range=0.2)
-gteste = ImageDataGenerator()
+gvalid = ImageDataGenerator()
 
 btreino = gtreino.flow(X_treino, y_treino, batch_size=128)
-bteste = gteste.flow(X_teste, y_teste, batch_size=128)
+bvalid = gvalid.flow(X_teste, y_teste, batch_size=128)
 ```
 
-Treinando o modelo com mais imagens e e resultado da acurácia:
+Treinando o modelo com mais imagens e o resultado da acurácia:
 
 ```
-model.fit_generator(btreino, steps_per_epoch = 842/128, epochs = 10, validation_data=bteste)
-loss, acc = model.evaluate(X_treino, y_treino)
-round(acc, 2)
+model2.fit_generator(btreino, steps_per_epoch = 718/128, epochs = 10, validation_data=bvalid)
+loss2, acc2 = model.evaluate(X_valid, y_valid)
+print(f'{round(acc2*100, 2)} %')
 
-0.95
+89.44 %
 ```
 
-Obteve-se uma acurácia de 95 %, que é maior do que o modelo sem data augmentation (~86 %). Agora iremos utilizar este modelo para aferir a acurácia para o modelo de testes:
+Obteve-se uma acurácia de 89.44 %, que é maior do que o modelo sem data augmentation (87.78 %). Agora iremos utilizar este modelo para aferir a acurácia para o modelo de testes:
 
 ```
-resultados = model.predict(X_teste)
-resultados = resultados > 0.5
+loss_teste, acc_teste = model2.evaluate(X_teste, y_teste)
+print(f'{round(acc_teste*100, 2)} %')
+
+88.53 %
 ```
