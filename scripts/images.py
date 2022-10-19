@@ -19,10 +19,10 @@ def resize_fig(shape):
 	return
 
 def create_labels():
-	cloudy = {i: 'cloudy' for i in range(1, 301, 1)}
-	rain = {i: 'rain' for i in range(301, 515, 1)}
-	shine = {i: 'shine' for i in range(515, 767, 1)}
-	sunrise = {i: 'sunrise' for i in range(767, 1124, 1)}
+	cloudy = {i: 0 for i in range(1, 301, 1)} # 1 para cloudy
+	rain = {i: 1 for i in range(301, 515, 1)} # 2 para rain
+	shine = {i: 2 for i in range(515, 767, 1)} # 3 para shine
+	sunrise = {i: 3 for i in range(767, 1124, 1)} # 4 para sunrise
 
 	labels = {**cloudy,**rain, **shine, **sunrise}
 
