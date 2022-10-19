@@ -135,10 +135,16 @@ print(f'{acc2*100:.2f} %')
 Obteve-se uma acurácia de 90.56 %, que é menor do que o modelo sem data augmentation (92.22 %). Neste caso não valeu a pena utilizar o data augmentation, já que a rede neural sem o mesmo método fornece uma acurácia melhor. Com isso, usaremos a rede neural sem data augmentation para o conjunto de testes:
 
 ```
-loss_teste, acc_teste = model2.evaluate(X_teste, y_teste)
-print(f'{round(acc_teste*100, 2)} %')
+prev = modelo.predict(X_teste)
+prev = prev > 0.5
+acc_teste = accuracy_score(y_teste, prev)
+print(f'{acc_teste*100:.2f} %')
 
-88.53 %
+86.22 %
 ```
+Com os resutados obtidos acima, consegue-se determinar que a rede neural construída acima é competente em generalizar para casos novos.
 
 # Deploy
+
+O deploy será realizado na plataforma HuggingFace. Os arquivos necessários para deploy serão armazenados na pasta deploy deste repositório. Para conseguir 
+acessar tal projeto na plataforma, basta entrar no link ao lado: https://huggingface.co/spaces/ramonmedeiro1/weather_image_classification.
