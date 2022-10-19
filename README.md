@@ -64,47 +64,53 @@ X_treino /= 255.0
 X_valid /= 255.0
 X_teste /= 255.0
 ```
-** Método sem augmentation **
+**Método sem augmentation**
 
 Abaixo é apresentado os resultados das acurácias que as CNNs obtiveram sem o método de data augmentation. Inicia-se a criação da CNN para a validação cruzada:
 
 ```
-model = Sequential()
-model.add(Conv2D(32, (3,3), input_shape = (150, 150, 3), activation = 'relu'))
-model.add(MaxPooling2D(pool_size=(2,2)))
-model.add(Flatten())
-model.add(Dense(units = 128, activation = 'relu'))
-model.add(Dropout(0.2))
-model.add(Dense(units = 4, activation = 'softmax'))
-model.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+modelo = Sequential()
+modelo.add(Conv2D(32, (3,3), input_shape = (150, 150, 3), activation = 'relu'))
+modelo.add(MaxPooling2D(pool_size=(2,2)))
+modelo.add(Conv2D(32, (3,3), input_shape = (150, 150, 3), activation = 'relu'))
+modelo.add(MaxPooling2D(pool_size=(2,2)))
+modelo.add(Flatten())
+modelo.add(Dense(units = 128, activation = 'relu'))
+modelo.add(Dropout(0.2))
+modelo.add(Dense(units = 4, activation = 'softmax'))
+modelo.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 ```
 
-A rede neural é composta por uma camada de convolução, onde 32 kernels (matrizes 3x3 para esse caso) serão aplicados para gerar 32 mapas de características e posterior aplicação da função de ativação reLU para retirar números negativos na matriz resultante. Aplicou-se o Max Pooling nos mapas de características, tal aplicação é importante já que nesta etapa mais características relevantes podem ser extraídas e também pode-se evitar o overfitting ou ruídos. Posteriormente aplica-se o Flatten, para reordenar os dados para a camada de entrada para a camada densa. Apenas uma camda oculta foi adicionada à rede neural, com 128 neurônios e função de ativação reLU. Utilizou uma camda de Dropout para reiniciar os pesos de 20% dos neurônios. A camada de saída possui 4 neurônios, já que o problema apresenta 4 classes. Abaixo é realizado o treinamento da rede neural já utilizando a validação:
+A rede neural é composta por duas camadas de convolução, onde 32 kernels (matrizes 3x3 para esse caso) serão aplicados para gerar 32 mapas de características e posterior aplicação da função de ativação reLU para retirar números negativos na matriz resultante. Aplicou-se o Max Pooling nos mapas de características, tal aplicação é importante já que nesta etapa mais características relevantes podem ser extraídas e também pode-se evitar o overfitting ou ruídos. Posteriormente aplica-se o Flatten, para reordenar os dados para a camada de entrada para a camada densa. Apenas uma camda oculta foi adicionada à rede neural, com 128 neurônios e função de ativação reLU. Utilizou uma camda de Dropout para reiniciar os pesos de 20% dos neurônios. A camada de saída possui 4 neurônios, já que o problema apresenta 4 classes. Abaixo é realizado o treinamento da rede neural já utilizando a validação:
 
 
 ```
-model.fit(X_treino, y_treino, validation_data=(X_valid, y_valid), epochs = 10)
-loss, acc = model.evaluate(X_valid, y_valid)
-print(f'{round(acc*100, 2)} %')
+modelo.fit(X_treino, y_treino, validation_data=(X_valid, y_valid), epochs = 25, batch_size = 100)
+results1 = modelo.predict(X_valid)
+results1 = results1 > 0.5
+acc1 = accuracy_score(y_valid, results1)
+print(f'{acc1*100:.2f}%')
 
-87.78 %
+92.22 %
 ```
 
-Tal rede neural forneceu 87.78 % de acurácia para o conjunto de treinamento sem data augmentation.
+Tal rede neural forneceu 92.22 % de acurácia para o conjunto de treinamento sem data augmentation.
 
-** Com data augmentation **
+**Com data augmentation**
 
 Novamente cria-se a rede neural, da mesma forma que a anterior, porém, agora iremos utilizar o data augmentation:
 
 ```
-model2 = Sequential()
-model2.add(Conv2D(32, (3,3), input_shape = (150, 150, 3), activation = 'relu'))
-model2.add(MaxPooling2D(pool_size=(2,2)))
-model2.add(Flatten())
-model2.add(Dense(units = 128, activation = 'relu'))
-model2.add(Dropout(0.2))
-model2.add(Dense(units = 4, activation = 'softmax'))
-model2.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+modelo2 = Sequential()
+modelo2.add(Conv2D(32, (3,3), input_shape = (150, 150, 3), activation = 'relu'))
+modelo2.add(MaxPooling2D(pool_size=(2,2)))
+modelo2.add(Conv2D(32, (3,3), input_shape = (150, 150, 3), activation = 'relu'))
+modelo2.add(MaxPooling2D(pool_size=(2,2)))
+modelo2.add(Flatten())
+modelo2.add(Dense(units = 128, activation = 'relu'))
+modelo2.add(Dropout(0.2))
+modelo2.add(Dense(units = 4, activation = 'softmax'))
+modelo2.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
 # Criando mais imagens no conjunto de treino
 gtreino = ImageDataGenerator(rotation_range=7, horizontal_flip = True, shear_range = 0.3, height_shift_range=0.07, zoom_range=0.2)
@@ -117,14 +123,16 @@ bvalid = gvalid.flow(X_teste, y_teste, batch_size=128)
 Treinando o modelo com mais imagens e o resultado da acurácia:
 
 ```
-model2.fit_generator(btreino, steps_per_epoch = 718/128, epochs = 10, validation_data=bvalid)
-loss2, acc2 = model.evaluate(X_valid, y_valid)
-print(f'{round(acc2*100, 2)} %')
+modelo2.fit_generator(btreino, epochs = 25, validation_data=bvalid)
+results2 = modelo2.predict(X_valid)
+results2 = results2 > 0.5
+acc2 = accuracy_score(y_valid, results2)
+print(f'{acc2*100:.2f} %')
 
-89.44 %
+90.56 %
 ```
 
-Obteve-se uma acurácia de 89.44 %, que é maior do que o modelo sem data augmentation (87.78 %). Agora iremos utilizar este modelo para aferir a acurácia para o modelo de testes:
+Obteve-se uma acurácia de 90.56 %, que é menor do que o modelo sem data augmentation (92.22 %). Neste caso não valeu a pena utilizar o data augmentation, já que a rede neural sem o mesmo método fornece uma acurácia melhor. Com isso, usaremos a rede neural sem data augmentation para o conjunto de testes:
 
 ```
 loss_teste, acc_teste = model2.evaluate(X_teste, y_teste)
